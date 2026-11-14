@@ -186,6 +186,12 @@
             color: var(--text-main);
         }
 
+        .btn-warning {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1.5px solid #ef4444;
+        }
+
         .btn:disabled {
             opacity: 0.45;
             cursor: not-allowed;
@@ -398,15 +404,27 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin: 20px 0;
+            margin: 20px 0 10px 0;
+        }
+
+        .summary-grid-bottom {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 0 0 20px 0;
         }
 
         .summary-item {
             background: var(--bg-color);
             padding: 12px 8px;
             border-radius: 8px;
+        }
+
+        .summary-item.highlight {
+            background: #eff6ff;
+            border: 1.5px solid #bfdbfe;
         }
 
         .summary-val {
@@ -419,6 +437,33 @@
             font-size: 0.8rem;
             color: var(--text-muted);
             font-weight: 600;
+        }
+
+        /* Yanlış Sorular Kutusu */
+        .wrong-export-box {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .wrong-export-box h3 {
+            font-size: 1rem;
+            color: #b91c1c;
+            margin-bottom: 6px;
+        }
+
+        .wrong-export-box p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .wrong-export-box textarea {
+            height: 130px;
+            font-size: 0.8rem;
+            background-color: #f8fafc;
+            margin-bottom: 10px;
         }
 
         @keyframes fadeIn {
@@ -444,7 +489,7 @@
         <!-- JSON Yükleme Alanı -->
         <div class="setup-card" id="setupScreen">
             <h2>Yeni Test Yükle</h2>
-            <p>Sohbetten kopyaladığın 20 soruluk JSON kodunu aşağıdaki kutuya yapıştır ve testi başlat. Moral Sponsoru: Bernacık.</p>
+            <p>Sohbetten kopyaladığın 20 soruluk JSON kodunu aşağıdaki kutuya yapıştır ve testi başlat.</p>
             
             <div class="error-msg" id="errorBox"></div>
             
@@ -463,6 +508,8 @@
         <div class="summary-card hidden" id="summaryCard">
             <h2>Test Tamamlandı</h2>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Performans özetin aşağıdadır. Sorulara dönüp tekrar inceleyebilirsin.</p>
+            
+            <!-- Üst Satır: Doğru / Yanlış / Boş -->
             <div class="summary-grid">
                 <div class="summary-item">
                     <span class="summary-val" style="color: #15803d;" id="sumCorrect">0</span>
@@ -476,13 +523,30 @@
                     <span class="summary-val" style="color: #64748b;" id="sumEmpty">20</span>
                     <span class="summary-lbl">Boş</span>
                 </div>
-                <div class="summary-item">
+            </div>
+
+            <!-- Alt Satır: Net Sayısı ve Başarı Yüzdesi -->
+            <div class="summary-grid-bottom">
+                <div class="summary-item highlight">
                     <span class="summary-val" style="color: #1d4ed8;" id="sumNet">0.00</span>
-                    <span class="summary-lbl">Net</span>
+                    <span class="summary-lbl">Net Sayısı</span>
+                </div>
+                <div class="summary-item highlight">
+                    <span class="summary-val" style="color: #0f766e;" id="sumPercent">%0.0</span>
+                    <span class="summary-lbl">Başarı Skoru</span>
                 </div>
             </div>
+
             <button class="btn btn-secondary" onclick="returnToQuestions()">🔍 Soruları İncele</button>
             <button class="btn btn-primary" onclick="resetApp()">🔄 Yeni Test Yükle</button>
+
+            <!-- Yanlış Yapılan Soruları Aktarma Alanı -->
+            <div class="wrong-export-box hidden" id="wrongExportBox">
+                <h3>Yanlış Yapılan Sorular (<span id="wrongExportCount">0</span> Soru)</h3>
+                <p>Aşağıdaki metni kopyalayıp ilgili ders başlığına göndererek bu soruların sonraki testlerde aynen sorulmasını sağlayabilirsin.</p>
+                <textarea id="wrongOutputArea" readonly></textarea>
+                <button class="btn btn-warning" id="copyWrongBtn" style="margin-bottom: 0;" onclick="copyWrongQuestions()">📋 Yanlış Soruları Kopyala</button>
+            </div>
         </div>
     </div>
 
@@ -710,7 +774,55 @@
             document.getElementById('quizScreen').classList.add('hidden');
             document.getElementById('bottomNav').classList.add('hidden');
             document.getElementById('summaryCard').classList.remove('hidden');
+
+            const wrongQuestions = [];
+            userAnswers.forEach((ans, idx) => {
+                if (ans !== null && ans !== questionsData[idx].dogruCevap) {
+                    wrongQuestions.push(questionsData[idx]);
+                }
+            });
+
+            const exportBox = document.getElementById('wrongExportBox');
+            if (wrongQuestions.length > 0) {
+                exportBox.classList.remove('hidden');
+                document.getElementById('wrongExportCount').textContent = wrongQuestions.length;
+                
+                const formattedPayload = 
+                    `Aşağıdaki yanlış yaptığım soruları soru havuzuna kaydet ve ilgili konu tekrar/rotasyon sırası geldiğinde bu soruları birebir aynen sor:\n\n` +
+                    "```json\n" +
+                    JSON.stringify(wrongQuestions, null, 2) +
+                    "\n```";
+                
+                document.getElementById('wrongOutputArea').value = formattedPayload;
+                document.getElementById('copyWrongBtn').textContent = '📋 Yanlış Soruları Kopyala';
+            } else {
+                exportBox.classList.add('hidden');
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function copyWrongQuestions() {
+            const textarea = document.getElementById('wrongOutputArea');
+            const btn = document.getElementById('copyWrongBtn');
+            
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textarea.value).then(() => {
+                    btn.textContent = '✓ Kopyalandı!';
+                    setTimeout(() => { btn.textContent = '📋 Yanlış Soruları Kopyala'; }, 2500);
+                }).catch(() => {
+                    document.execCommand('copy');
+                    btn.textContent = '✓ Kopyalandı!';
+                    setTimeout(() => { btn.textContent = '📋 Yanlış Soruları Kopyala'; }, 2500);
+                });
+            } else {
+                document.execCommand('copy');
+                btn.textContent = '✓ Kopyalandı!';
+                setTimeout(() => { btn.textContent = '📋 Yanlış Soruları Kopyala'; }, 2500);
+            }
         }
 
         function returnToQuestions() {
@@ -735,7 +847,9 @@
                 }
             });
 
+            const total = questionsData.length || 20;
             const net = correct - (wrong * 0.25);
+            const percent = Math.max(0, (net / total) * 100);
 
             document.getElementById('topCorrect').textContent = correct;
             document.getElementById('topWrong').textContent = wrong;
@@ -745,6 +859,7 @@
             document.getElementById('sumWrong').textContent = wrong;
             document.getElementById('sumEmpty').textContent = empty;
             document.getElementById('sumNet').textContent = net.toFixed(2);
+            document.getElementById('sumPercent').textContent = '%' + percent.toFixed(1);
         }
 
         function resetApp() {
