@@ -47,14 +47,11 @@
             padding: 16px;
         }
 
-        /* Üst Bilgi Çubuğu */
+        /* Üst Bilgi Çubuğu (Sayfa başında sabit, kaydırmayla yukarı çıkar) */
         .header {
             background: var(--card-bg);
             padding: 14px 20px;
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -326,7 +323,7 @@
             border-radius: 0 8px 8px 0;
             display: none;
             animation: fadeIn 0.25s ease-in-out;
-            scroll-margin-top: 75px;
+            scroll-margin-top: 20px;
         }
 
         .solution-box.sol-correct {
