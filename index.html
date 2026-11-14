@@ -193,13 +193,13 @@
 
         textarea {
             width: 100%;
-            height: 160px;
+            height: 180px;
             padding: 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             font-family: monospace;
             font-size: 0.85rem;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             resize: vertical;
         }
 
@@ -444,15 +444,13 @@
         <!-- JSON Yükleme Alanı -->
         <div class="setup-card" id="setupScreen">
             <h2>Yeni Test Yükle</h2>
-            <p>Sohbetten kopyaladığın 20 soruluk JSON kodunu tek dokunuşla aktarabilir veya aşağıdaki kutuya yapıştırabilirsin.</p>
+            <p>Sohbetten kopyaladığın 20 soruluk JSON kodunu aşağıdaki kutuya yapıştır ve testi başlat.</p>
             
             <div class="error-msg" id="errorBox"></div>
-
-            <button class="btn btn-primary" onclick="pasteFromClipboard()">📋 Panodan Yapıştır ve Başlat</button>
             
             <textarea id="jsonInput" placeholder='[{"soru": "...", "siklar": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."], "dogruCevap": 0, "cozum": "..."}]'></textarea>
             
-            <button class="btn btn-secondary" onclick="startFromTextarea()">Metin Kutusundan Başlat</button>
+            <button class="btn btn-primary" style="margin-bottom: 0;" onclick="startFromTextarea()">Testi Başlat</button>
         </div>
 
         <!-- Soru Haritası ve Tekil Soru Alanı -->
@@ -510,21 +508,6 @@
 
         function hideError() {
             document.getElementById('errorBox').style.display = 'none';
-        }
-
-        async function pasteFromClipboard() {
-            hideError();
-            try {
-                const text = await navigator.clipboard.readText();
-                if (!text || text.trim() === '') {
-                    showError('Pano boş görünüyor. Önce sohbetten JSON kodunu kopyalayın.');
-                    return;
-                }
-                document.getElementById('jsonInput').value = text;
-                parseAndStart(text);
-            } catch (err) {
-                showError('Tarayıcı pano erişimine izin vermedi. Lütfen aşağıdaki kutuya basılı tutup "Yapıştır" deyin ve alttaki butona basın.');
-            }
         }
 
         function startFromTextarea() {
