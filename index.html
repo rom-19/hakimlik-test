@@ -22,8 +22,8 @@
             --wrong-bg: #fee2e2;
             --wrong-border: #ef4444;
             --wrong-text: #7f1d1d;
-            --solution-bg: #f8fafc;
-            --solution-border: #3b82f6;
+            --solution-correct-bg: #f0fdf4;
+            --solution-wrong-bg: #fef2f2;
         }
 
         * {
@@ -313,30 +313,45 @@
             color: var(--wrong-text);
         }
 
-        /* Çözüm Kutusu */
+        /* Çözüm Kutusu (Doğru/Yanlış Durumuna Göre Renkli) */
         .solution-box {
             margin-top: 18px;
             padding: 16px;
-            background-color: var(--solution-bg);
-            border-left: 4px solid var(--solution-border);
             border-radius: 0 8px 8px 0;
             display: none;
             animation: fadeIn 0.25s ease-in-out;
         }
 
+        .solution-box.sol-correct {
+            background-color: var(--solution-correct-bg);
+            border-left: 4px solid var(--correct-border);
+        }
+
+        .solution-box.sol-wrong {
+            background-color: var(--solution-wrong-bg);
+            border-left: 4px solid var(--wrong-border);
+        }
+
         .solution-title {
             font-weight: 700;
             font-size: 0.9rem;
-            color: var(--primary);
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
+        .solution-box.sol-correct .solution-title {
+            color: var(--correct-text);
+        }
+
+        .solution-box.sol-wrong .solution-title {
+            color: var(--wrong-text);
+        }
+
         .solution-content p {
             margin-bottom: 10px;
             font-size: 0.95rem;
-            color: #334155;
+            color: #1e293b;
         }
 
         .solution-content p:last-child {
@@ -598,6 +613,7 @@
             const ans = userAnswers[currentIndex];
             const isAnswered = (ans !== null);
             const correctIndex = q.dogruCevap;
+            const isCorrect = isAnswered && (ans === correctIndex);
 
             const container = document.getElementById('singleQuestionContainer');
 
@@ -615,7 +631,7 @@
                 if (isAnswered) {
                     if (optIndex === correctIndex) {
                         extraClass = 'correct';
-                    } else if (optIndex === ans && ans !== correctIndex) {
+                    } else if (optIndex === ans && !isCorrect) {
                         extraClass = 'wrong';
                     }
                 }
@@ -630,12 +646,14 @@
 
             let statusHTML = '';
             if (isAnswered) {
-                if (ans === correctIndex) {
+                if (isCorrect) {
                     statusHTML = `<span class="q-status" style="color: #15803d; background: #dcfce7;">✓ Doğru</span>`;
                 } else {
                     statusHTML = `<span class="q-status" style="color: #b91c1c; background: #fee2e2;">✗ Yanlış (Doğru: ${letters[correctIndex]})</span>`;
                 }
             }
+
+            const solStateClass = isAnswered ? (isCorrect ? 'sol-correct' : 'sol-wrong') : '';
 
             container.innerHTML = `
                 <div class="question-card">
@@ -647,14 +665,13 @@
                     <div class="options-list">
                         ${optionsHTML}
                     </div>
-                    <div class="solution-box" style="display: ${isAnswered ? 'block' : 'none'};">
+                    <div class="solution-box ${solStateClass}" style="display: ${isAnswered ? 'block' : 'none'};">
                         <div class="solution-title">Gerekçeli Çözüm</div>
                         <div class="solution-content">${paragraphs}</div>
                     </div>
                 </div>
             `;
 
-            // Alt butonları güncelle
             document.getElementById('prevBtn').disabled = (currentIndex === 0);
             const nextBtn = document.getElementById('nextBtn');
             if (currentIndex === questionsData.length - 1) {
