@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Hâkimlik Test">
+    <title>Adli Yargı Hâkimlik Test Motoru</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #1d4ed8;
+            --primary-hover: #1e40af;
+            --border: #e2e8f0;
+            --correct-bg: #dcfce7;
+            --correct-border: #22c55e;
+            --correct-text: #14532d;
+            --wrong-bg: #fee2e2;
+            --wrong-border: #ef4444;
+            --wrong-text: #7f1d1d;
+            --solution-bg: #f8fafc;
+            --solution-border: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* Üst Bilgi Çubuğu */
+        .header {
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .stat-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--bg-color);
+        }
+
+        .stat-d { color: #15803d; background: #dcfce7; }
+        .stat-y { color: #b91c1c; background: #fee2e2; }
+        .stat-net { color: #1d4ed8; background: #dbeafe; }
+
+        /* Giriş / JSON Yapıştırma Ekranı */
+        .setup-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .setup-card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .setup-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .error-msg {
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        /* Soru Kartları */
+        .question-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+        }
+
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .q-number {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .q-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .q-text {
+            font-size: 1.02rem;
+            font-weight: 500;
+            margin-bottom: 16px;
+            white-space: pre-line;
+        }
+
+        /* Şıklar */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: flex-start;
+            text-align: left;
+            width: 100%;
+            padding: 14px 16px;
+            background: #ffffff;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.98rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background-color: #f8fafc;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-letter {
+            font-weight: 700;
+            margin-right: 10px;
+            min-width: 22px;
+        }
+
+        /* Doğru / Yanlış Durumları */
+        .option-btn.correct {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-border);
+            color: var(--correct-text);
+            font-weight: 600;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-bg);
+            border-color: var(--wrong-border);
+            color: var(--wrong-text);
+        }
+
+        /* Çözüm Kutusu */
+        .solution-box {
+            margin-top: 16px;
+            padding: 16px;
+            background-color: var(--solution-bg);
+            border-left: 4px solid var(--solution-border);
+            border-radius: 0 8px 8px 0;
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .solution-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .solution-content p {
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .solution-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Sonuç Özeti Kartı */
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+            border: 2px solid var(--primary);
+            text-align: center;
+            display: none;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            background: var(--bg-color);
+            padding: 12px 8px;
+            border-radius: 8px;
+        }
+
+        .summary-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: block;
+        }
+
+        .summary-lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 id="testTitle">Adli Yargı Testi</h1>
+        <div class="stats-bar hidden" id="statsBar">
+            <span class="stat-badge stat-d">D: <span id="topCorrect">0</span></span>
+            <span class="stat-badge stat-y">Y: <span id="topWrong">0</span></span>
+            <span class="stat-badge stat-net">Net: <span id="topNet">0.00</span></span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- JSON Yükleme Alanı -->
+        <div class="setup-card" id="setupScreen">
+            <h2>Yeni Test Yükle</h2>
+            <p>Sohbetten kopyaladığın 20 soruluk JSON kodunu tek dokunuşla aktarabilir veya aşağıdaki kutuya yapıştırabilirsin.</p>
+            
+            <div class="error-msg" id="errorBox"></div>
+
+            <button class="btn btn-primary" onclick="pasteFromClipboard()">📋 Panodan Yapıştır ve Başlat</button>
+            
+            <textarea id="jsonInput" placeholder='[{"soru": "...", "siklar": ["A) ...", "B) ...", "C) ...", "D) ...", "E) ..."], "dogruCevap": 0, "cozum": "..."}]'></textarea>
+            
+            <button class="btn btn-secondary" onclick="startFromTextarea()">Metin Kutusundan Başlat</button>
+        </div>
+
+        <!-- Soruların Listeleneceği Alan -->
+        <div id="quizContainer" class="hidden"></div>
+
+        <!-- Test Sonu Özet Alanı -->
+        <div class="summary-card" id="summaryCard">
+            <h2>Test Özeti</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-val" style="color: #15803d;" id="sumCorrect">0</span>
+                    <span class="summary-lbl">Doğru</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-val" style="color: #b91c1c;" id="sumWrong">0</span>
+                    <span class="summary-lbl">Yanlış</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-val" style="color: #64748b;" id="sumEmpty">20</span>
+                    <span class="summary-lbl">Boş</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-val" style="color: #1d4ed8;" id="sumNet">0.00</span>
+                    <span class="summary-lbl">Net</span>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="resetApp()">🔄 Yeni Test Yükle</button>
+        </div>
+    </div>
+
+    <script>
+        let questionsData = [];
+        let userAnswers = [];
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+
+        function showError(msg) {
+            const err = document.getElementById('errorBox');
+            err.textContent = msg;
+            err.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorBox').style.display = 'none';
+        }
+
+        async function pasteFromClipboard() {
+            hideError();
+            try {
+                const text = await navigator.clipboard.readText();
+                if (!text || text.trim() === '') {
+                    showError('Pano boş görünüyor. Önce sohbetten JSON kodunu kopyalayın.');
+                    return;
+                }
+                document.getElementById('jsonInput').value = text;
+                parseAndStart(text);
+            } catch (err) {
+                showError('Tarayıcı pano erişimine izin vermedi. Lütfen aşağıdaki kutuya basılı tutup "Yapıştır" deyin ve alttaki butona basın.');
+            }
+        }
+
+        function startFromTextarea() {
+            hideError();
+            const text = document.getElementById('jsonInput').value;
+            if (!text || text.trim() === '') {
+                showError('Lütfen metin kutusuna JSON kodunu yapıştırın.');
+                return;
+            }
+            parseAndStart(text);
+        }
+
+        function parseAndStart(rawText) {
+            try {
+                // Olası markdown kod bloğu işaretlerini temizle (```json ... ```)
+                let cleaned = rawText.trim();
+                if (cleaned.startsWith('```')) {
+                    cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+                }
+
+                const parsed = JSON.parse(cleaned);
+                
+                // Eğer obje içinde "sorular" dizisi varsa onu al, doğrudan dizi ise kendisini al
+                const qList = Array.isArray(parsed) ? parsed : (parsed.sorular || parsed.questions);
+
+                if (!Array.isArray(qList) || qList.length === 0) {
+                    throw new Error('Geçerli bir soru listesi bulunamadı.');
+                }
+
+                if (parsed.konu || parsed.baslik) {
+                    document.getElementById('testTitle').textContent = parsed.konu || parsed.baslik;
+                }
+
+                questionsData = qList;
+                userAnswers = new Array(questionsData.length).fill(null);
+
+                renderQuiz();
+            } catch (e) {
+                showError('JSON formatı hatalı: ' + e.message + '. Lütfen kodun tamamını eksiksiz kopyaladığınızdan emin olun.');
+            }
+        }
+
+        function renderQuiz() {
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('statsBar').classList.remove('hidden');
+            document.getElementById('summaryCard').style.display = 'block';
+            
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+
+            questionsData.forEach((q, qIndex) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.id = `q-card-${qIndex}`;
+
+                // Çözüm metnini paragraflara böl
+                const paragraphs = (q.cozum || 'Çözüm metni bulunmuyor.')
+                    .split(/\n+/)
+                    .filter(p => p.trim() !== '')
+                    .map(p => `<p>${escapeHTML(p.trim())}</p>`)
+                    .join('');
+
+                let optionsHTML = '';
+                q.siklar.forEach((optText, optIndex) => {
+                    // Eğer şık metni zaten "A) " ile başlıyorsa tekrar harf ekleme
+                    const cleanOpt = optText.replace(/^[A-Ea-e][\)\.\-]\s*/, '');
+                    optionsHTML += `
+                        <button class="option-btn" id="opt-${qIndex}-${optIndex}" onclick="selectOption(${qIndex}, ${optIndex})">
+                            <span class="option-letter">${letters[optIndex]})</span>
+                            <span>${escapeHTML(cleanOpt)}</span>
+                        </button>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <div class="q-header">
+                        <span class="q-number">Soru ${qIndex + 1} / ${questionsData.length}</span>
+                        <span class="q-status" id="status-${qIndex}"></span>
+                    </div>
+                    <div class="q-text">${escapeHTML(q.soru)}</div>
+                    <div class="options-list" id="opts-${qIndex}">
+                        ${optionsHTML}
+                    </div>
+                    <div class="solution-box" id="sol-${qIndex}">
+                        <div class="solution-title">Gerekçeli Çözüm</div>
+                        <div class="solution-content">${paragraphs}</div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            updateStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function selectOption(qIndex, selectedOptIndex) {
+            // Daha önce cevaplandıysa işlem yapma
+            if (userAnswers[qIndex] !== null) return;
+
+            userAnswers[qIndex] = selectedOptIndex;
+            const correctIndex = questionsData[qIndex].dogruCevap;
+            const isCorrect = (selectedOptIndex === correctIndex);
+
+            // Tüm şıkları kilitle ve renklendir
+            const totalOpts = questionsData[qIndex].siklar.length;
+            for (let i = 0; i < totalOpts; i++) {
+                const btn = document.getElementById(`opt-${qIndex}-${i}`);
+                btn.disabled = true;
+
+                if (i === correctIndex) {
+                    btn.classList.add('correct');
+                } else if (i === selectedOptIndex && !isCorrect) {
+                    btn.classList.add('wrong');
+                }
+            }
+
+            // Soru üst durum etiketi
+            const statusBadge = document.getElementById(`status-${qIndex}`);
+            if (isCorrect) {
+                statusBadge.textContent = '✓ Doğru';
+                statusBadge.style.color = '#15803d';
+                statusBadge.style.background = '#dcfce7';
+            } else {
+                statusBadge.textContent = `✗ Yanlış (Doğru: ${letters[correctIndex]})`;
+                statusBadge.style.color = '#b91c1c';
+                statusBadge.style.background = '#fee2e2';
+            }
+
+            // Çözüm kutusunu otomatik aç
+            const solBox = document.getElementById(`sol-${qIndex}`);
+            solBox.style.display = 'block';
+
+            updateStats();
+        }
+
+        function updateStats() {
+            let correct = 0;
+            let wrong = 0;
+            let empty = 0;
+
+            userAnswers.forEach((ans, idx) => {
+                if (ans === null) {
+                    empty++;
+                } else if (ans === questionsData[idx].dogruCevap) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
+            });
+
+            // 4 yanlış 1 doğruyu götürür
+            const net = correct - (wrong * 0.25);
+
+            document.getElementById('topCorrect').textContent = correct;
+            document.getElementById('topWrong').textContent = wrong;
+            document.getElementById('topNet').textContent = net.toFixed(2);
+
+            document.getElementById('sumCorrect').textContent = correct;
+            document.getElementById('sumWrong').textContent = wrong;
+            document.getElementById('sumEmpty').textContent = empty;
+            document.getElementById('sumNet').textContent = net.toFixed(2);
+        }
+
+        function resetApp() {
+            questionsData = [];
+            userAnswers = [];
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('testTitle').textContent = 'Adli Yargı Testi';
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('statsBar').classList.add('hidden');
+            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('setupScreen').classList.remove('hidden');
+            hideError();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function escapeHTML(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
