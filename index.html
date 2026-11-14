@@ -313,13 +313,14 @@
             color: var(--wrong-text);
         }
 
-        /* Çözüm Kutusu (Doğru/Yanlış Durumuna Göre Renkli) */
+        /* Çözüm Kutusu */
         .solution-box {
             margin-top: 18px;
             padding: 16px;
             border-radius: 0 8px 8px 0;
             display: none;
             animation: fadeIn 0.25s ease-in-out;
+            scroll-margin-top: 75px;
         }
 
         .solution-box.sol-correct {
@@ -565,7 +566,7 @@
                 document.getElementById('bottomNav').classList.remove('hidden');
 
                 buildNavStrip();
-                renderCurrentQuestion();
+                renderCurrentQuestion(true);
                 updateStats();
             } catch (e) {
                 showError('JSON formatı hatalı: ' + e.message + '. Lütfen kodun tamamını eksiksiz kopyaladığınızdan emin olun.');
@@ -608,7 +609,7 @@
             });
         }
 
-        function renderCurrentQuestion() {
+        function renderCurrentQuestion(scrollTop = true) {
             const q = questionsData[currentIndex];
             const ans = userAnswers[currentIndex];
             const isAnswered = (ans !== null);
@@ -665,7 +666,7 @@
                     <div class="options-list">
                         ${optionsHTML}
                     </div>
-                    <div class="solution-box ${solStateClass}" style="display: ${isAnswered ? 'block' : 'none'};">
+                    <div class="solution-box ${solStateClass}" id="activeSolutionBox" style="display: ${isAnswered ? 'block' : 'none'};">
                         <div class="solution-title">Gerekçeli Çözüm</div>
                         <div class="solution-content">${paragraphs}</div>
                     </div>
@@ -681,34 +682,42 @@
             }
 
             updateNavStrip();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (scrollTop) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         function selectOption(selectedOptIndex) {
             if (userAnswers[currentIndex] !== null) return;
             userAnswers[currentIndex] = selectedOptIndex;
-            renderCurrentQuestion();
+            renderCurrentQuestion(false);
             updateStats();
+
+            const solBox = document.getElementById('activeSolutionBox');
+            if (solBox) {
+                solBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
         function goToQuestion(idx) {
             if (idx >= 0 && idx < questionsData.length) {
                 currentIndex = idx;
-                renderCurrentQuestion();
+                renderCurrentQuestion(true);
             }
         }
 
         function prevQuestion() {
             if (currentIndex > 0) {
                 currentIndex--;
-                renderCurrentQuestion();
+                renderCurrentQuestion(true);
             }
         }
 
         function nextQuestion() {
             if (currentIndex < questionsData.length - 1) {
                 currentIndex++;
-                renderCurrentQuestion();
+                renderCurrentQuestion(true);
             } else {
                 showSummary();
             }
@@ -725,7 +734,7 @@
             document.getElementById('summaryCard').classList.add('hidden');
             document.getElementById('quizScreen').classList.remove('hidden');
             document.getElementById('bottomNav').classList.remove('hidden');
-            renderCurrentQuestion();
+            renderCurrentQuestion(true);
         }
 
         function updateStats() {
