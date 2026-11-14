@@ -38,7 +38,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
 
         .container {
@@ -47,9 +47,10 @@
             padding: 16px;
         }
 
+        /* Üst Bilgi Çubuğu */
         .header {
             background: var(--card-bg);
-            padding: 16px 20px;
+            padding: 14px 20px;
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
@@ -61,20 +62,24 @@
         }
 
         .header h1 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 55%;
         }
 
         .stats-bar {
             display: flex;
-            gap: 12px;
-            font-size: 0.85rem;
+            gap: 8px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
 
         .stat-badge {
-            padding: 4px 10px;
+            padding: 4px 8px;
             border-radius: 6px;
             background: var(--bg-color);
         }
@@ -83,6 +88,55 @@
         .stat-y { color: #b91c1c; background: #fee2e2; }
         .stat-net { color: #1d4ed8; background: #dbeafe; }
 
+        /* Soru Navigasyon Haritası */
+        .nav-strip {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 10px 4px;
+            margin-bottom: 12px;
+            scrollbar-width: none;
+        }
+
+        .nav-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-dot {
+            min-width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .nav-dot.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.25);
+            font-weight: 800;
+        }
+
+        .nav-dot.answered-correct {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-border);
+            color: var(--correct-text);
+        }
+
+        .nav-dot.answered-wrong {
+            background-color: var(--wrong-bg);
+            border-color: var(--wrong-border);
+            color: var(--wrong-text);
+        }
+
+        /* Giriş / JSON Yapıştırma Ekranı */
         .setup-card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -123,13 +177,18 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background-color: var(--primary-hover);
         }
 
         .btn-secondary {
             background-color: #e2e8f0;
             color: var(--text-main);
+        }
+
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
 
         textarea {
@@ -159,21 +218,22 @@
             display: none;
         }
 
+        /* Tek Soru Kartı */
         .question-card {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.04);
             border: 1px solid var(--border);
+            animation: fadeIn 0.2s ease-in-out;
         }
 
         .q-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
         }
 
@@ -191,13 +251,12 @@
         }
 
         .q-text {
-            font-size: 1.02rem;
+            font-size: 1.04rem;
             font-weight: 500;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             white-space: pre-line;
         }
 
-        /* Olumsuz Soru Kökü Vurgusu (ÖSYM Stili) */
         .q-text u {
             text-decoration: underline;
             text-decoration-thickness: 2px;
@@ -254,8 +313,9 @@
             color: var(--wrong-text);
         }
 
+        /* Çözüm Kutusu */
         .solution-box {
-            margin-top: 16px;
+            margin-top: 18px;
             padding: 16px;
             background-color: var(--solution-bg);
             border-left: 4px solid var(--solution-border);
@@ -283,14 +343,41 @@
             margin-bottom: 0;
         }
 
+        /* Alt Sayfa Geçiş Çubuğu */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            z-index: 100;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
+        }
+
+        .bottom-nav-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .bottom-nav .btn {
+            margin-bottom: 0;
+            padding: 12px 16px;
+        }
+
+        /* Sonuç Özeti Kartı */
         .summary-card {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 24px;
-            margin-top: 24px;
+            margin-top: 20px;
             border: 2px solid var(--primary);
             text-align: center;
-            display: none;
+            animation: fadeIn 0.25s ease-in-out;
         }
 
         .summary-grid {
@@ -319,7 +406,7 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -338,6 +425,7 @@
     </div>
 
     <div class="container">
+        <!-- JSON Yükleme Alanı -->
         <div class="setup-card" id="setupScreen">
             <h2>Yeni Test Yükle</h2>
             <p>Sohbetten kopyaladığın 20 soruluk JSON kodunu tek dokunuşla aktarabilir veya aşağıdaki kutuya yapıştırabilirsin.</p>
@@ -351,10 +439,16 @@
             <button class="btn btn-secondary" onclick="startFromTextarea()">Metin Kutusundan Başlat</button>
         </div>
 
-        <div id="quizContainer" class="hidden"></div>
+        <!-- Soru Haritası ve Tekil Soru Alanı -->
+        <div id="quizScreen" class="hidden">
+            <div class="nav-strip" id="navStrip"></div>
+            <div id="singleQuestionContainer"></div>
+        </div>
 
-        <div class="summary-card" id="summaryCard">
-            <h2>Test Özeti</h2>
+        <!-- Test Sonu Özet Alanı -->
+        <div class="summary-card hidden" id="summaryCard">
+            <h2>Test Tamamlandı</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">Performans özetin aşağıdadır. Sorulara dönüp tekrar inceleyebilirsin.</p>
             <div class="summary-grid">
                 <div class="summary-item">
                     <span class="summary-val" style="color: #15803d;" id="sumCorrect">0</span>
@@ -373,13 +467,23 @@
                     <span class="summary-lbl">Net</span>
                 </div>
             </div>
+            <button class="btn btn-secondary" onclick="returnToQuestions()">🔍 Soruları İncele</button>
             <button class="btn btn-primary" onclick="resetApp()">🔄 Yeni Test Yükle</button>
+        </div>
+    </div>
+
+    <!-- Alt Sabit İleri/Geri Çubuğu -->
+    <div class="bottom-nav hidden" id="bottomNav">
+        <div class="bottom-nav-inner">
+            <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">← Önceki</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Sonraki →</button>
         </div>
     </div>
 
     <script>
         let questionsData = [];
         let userAnswers = [];
+        let currentIndex = 0;
         const letters = ['A', 'B', 'C', 'D', 'E'];
 
         function showError(msg) {
@@ -437,100 +541,174 @@
 
                 questionsData = qList;
                 userAnswers = new Array(questionsData.length).fill(null);
+                currentIndex = 0;
 
-                renderQuiz();
+                document.getElementById('setupScreen').classList.add('hidden');
+                document.getElementById('summaryCard').classList.add('hidden');
+                document.getElementById('statsBar').classList.remove('hidden');
+                document.getElementById('quizScreen').classList.remove('hidden');
+                document.getElementById('bottomNav').classList.remove('hidden');
+
+                buildNavStrip();
+                renderCurrentQuestion();
+                updateStats();
             } catch (e) {
                 showError('JSON formatı hatalı: ' + e.message + '. Lütfen kodun tamamını eksiksiz kopyaladığınızdan emin olun.');
             }
         }
 
-        function renderQuiz() {
-            document.getElementById('setupScreen').classList.add('hidden');
-            document.getElementById('statsBar').classList.remove('hidden');
-            document.getElementById('summaryCard').style.display = 'block';
-            
-            const container = document.getElementById('quizContainer');
-            container.innerHTML = '';
-            container.classList.remove('hidden');
-
-            questionsData.forEach((q, qIndex) => {
-                const card = document.createElement('div');
-                card.className = 'question-card';
-                card.id = `q-card-${qIndex}`;
-
-                const paragraphs = (q.cozum || 'Çözüm metni bulunmuyor.')
-                    .split(/\n+/)
-                    .filter(p => p.trim() !== '')
-                    .map(p => `<p>${escapeHTML(p.trim())}</p>`)
-                    .join('');
-
-                let optionsHTML = '';
-                q.siklar.forEach((optText, optIndex) => {
-                    const cleanOpt = optText.replace(/^[A-Ea-e][\)\.\-]\s*/, '');
-                    optionsHTML += `
-                        <button class="option-btn" id="opt-${qIndex}-${optIndex}" onclick="selectOption(${qIndex}, ${optIndex})">
-                            <span class="option-letter">${letters[optIndex]})</span>
-                            <span>${escapeHTML(cleanOpt)}</span>
-                        </button>
-                    `;
-                });
-
-                card.innerHTML = `
-                    <div class="q-header">
-                        <span class="q-number">Soru ${qIndex + 1} / ${questionsData.length}</span>
-                        <span class="q-status" id="status-${qIndex}"></span>
-                    </div>
-                    <div class="q-text">${formatQuestionText(q.soru)}</div>
-                    <div class="options-list" id="opts-${qIndex}">
-                        ${optionsHTML}
-                    </div>
-                    <div class="solution-box" id="sol-${qIndex}">
-                        <div class="solution-title">Gerekçeli Çözüm</div>
-                        <div class="solution-content">${paragraphs}</div>
-                    </div>
-                `;
-
-                container.appendChild(card);
+        function buildNavStrip() {
+            const strip = document.getElementById('navStrip');
+            strip.innerHTML = '';
+            questionsData.forEach((_, idx) => {
+                const dot = document.createElement('button');
+                dot.className = 'nav-dot';
+                dot.id = `nav-dot-${idx}`;
+                dot.textContent = idx + 1;
+                dot.onclick = () => goToQuestion(idx);
+                strip.appendChild(dot);
             });
-
-            updateStats();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function selectOption(qIndex, selectedOptIndex) {
-            if (userAnswers[qIndex] !== null) return;
+        function updateNavStrip() {
+            questionsData.forEach((q, idx) => {
+                const dot = document.getElementById(`nav-dot-${idx}`);
+                if (!dot) return;
 
-            userAnswers[qIndex] = selectedOptIndex;
-            const correctIndex = questionsData[qIndex].dogruCevap;
-            const isCorrect = (selectedOptIndex === correctIndex);
+                dot.classList.remove('active', 'answered-correct', 'answered-wrong');
+                
+                if (idx === currentIndex) {
+                    dot.classList.add('active');
+                    dot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
 
-            const totalOpts = questionsData[qIndex].siklar.length;
-            for (let i = 0; i < totalOpts; i++) {
-                const btn = document.getElementById(`opt-${qIndex}-${i}`);
-                btn.disabled = true;
+                const ans = userAnswers[idx];
+                if (ans !== null) {
+                    if (ans === q.dogruCevap) {
+                        dot.classList.add('answered-correct');
+                    } else {
+                        dot.classList.add('answered-wrong');
+                    }
+                }
+            });
+        }
 
-                if (i === correctIndex) {
-                    btn.classList.add('correct');
-                } else if (i === selectedOptIndex && !isCorrect) {
-                    btn.classList.add('wrong');
+        function renderCurrentQuestion() {
+            const q = questionsData[currentIndex];
+            const ans = userAnswers[currentIndex];
+            const isAnswered = (ans !== null);
+            const correctIndex = q.dogruCevap;
+
+            const container = document.getElementById('singleQuestionContainer');
+
+            const paragraphs = (q.cozum || 'Çözüm metni bulunmuyor.')
+                .split(/\n+/)
+                .filter(p => p.trim() !== '')
+                .map(p => `<p>${escapeHTML(p.trim())}</p>`)
+                .join('');
+
+            let optionsHTML = '';
+            q.siklar.forEach((optText, optIndex) => {
+                const cleanOpt = optText.replace(/^[A-Ea-e][\)\.\-]\s*/, '');
+                let extraClass = '';
+                
+                if (isAnswered) {
+                    if (optIndex === correctIndex) {
+                        extraClass = 'correct';
+                    } else if (optIndex === ans && ans !== correctIndex) {
+                        extraClass = 'wrong';
+                    }
+                }
+
+                optionsHTML += `
+                    <button class="option-btn ${extraClass}" ${isAnswered ? 'disabled' : ''} onclick="selectOption(${optIndex})">
+                        <span class="option-letter">${letters[optIndex]})</span>
+                        <span>${escapeHTML(cleanOpt)}</span>
+                    </button>
+                `;
+            });
+
+            let statusHTML = '';
+            if (isAnswered) {
+                if (ans === correctIndex) {
+                    statusHTML = `<span class="q-status" style="color: #15803d; background: #dcfce7;">✓ Doğru</span>`;
+                } else {
+                    statusHTML = `<span class="q-status" style="color: #b91c1c; background: #fee2e2;">✗ Yanlış (Doğru: ${letters[correctIndex]})</span>`;
                 }
             }
 
-            const statusBadge = document.getElementById(`status-${qIndex}`);
-            if (isCorrect) {
-                statusBadge.textContent = '✓ Doğru';
-                statusBadge.style.color = '#15803d';
-                statusBadge.style.background = '#dcfce7';
+            container.innerHTML = `
+                <div class="question-card">
+                    <div class="q-header">
+                        <span class="q-number">Soru ${currentIndex + 1} / ${questionsData.length}</span>
+                        ${statusHTML}
+                    </div>
+                    <div class="q-text">${formatQuestionText(q.soru)}</div>
+                    <div class="options-list">
+                        ${optionsHTML}
+                    </div>
+                    <div class="solution-box" style="display: ${isAnswered ? 'block' : 'none'};">
+                        <div class="solution-title">Gerekçeli Çözüm</div>
+                        <div class="solution-content">${paragraphs}</div>
+                    </div>
+                </div>
+            `;
+
+            // Alt butonları güncelle
+            document.getElementById('prevBtn').disabled = (currentIndex === 0);
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentIndex === questionsData.length - 1) {
+                nextBtn.textContent = 'Testi Bitir ✓';
             } else {
-                statusBadge.textContent = `✗ Yanlış (Doğru: ${letters[correctIndex]})`;
-                statusBadge.style.color = '#b91c1c';
-                statusBadge.style.background = '#fee2e2';
+                nextBtn.textContent = 'Sonraki →';
             }
 
-            const solBox = document.getElementById(`sol-${qIndex}`);
-            solBox.style.display = 'block';
+            updateNavStrip();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
+        function selectOption(selectedOptIndex) {
+            if (userAnswers[currentIndex] !== null) return;
+            userAnswers[currentIndex] = selectedOptIndex;
+            renderCurrentQuestion();
             updateStats();
+        }
+
+        function goToQuestion(idx) {
+            if (idx >= 0 && idx < questionsData.length) {
+                currentIndex = idx;
+                renderCurrentQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderCurrentQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questionsData.length - 1) {
+                currentIndex++;
+                renderCurrentQuestion();
+            } else {
+                showSummary();
+            }
+        }
+
+        function showSummary() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('bottomNav').classList.add('hidden');
+            document.getElementById('summaryCard').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function returnToQuestions() {
+            document.getElementById('summaryCard').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('bottomNav').classList.remove('hidden');
+            renderCurrentQuestion();
         }
 
         function updateStats() {
@@ -563,11 +741,13 @@
         function resetApp() {
             questionsData = [];
             userAnswers = [];
+            currentIndex = 0;
             document.getElementById('jsonInput').value = '';
             document.getElementById('testTitle').textContent = 'Adli Yargı Testi';
-            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('quizScreen').classList.add('hidden');
             document.getElementById('statsBar').classList.add('hidden');
-            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('bottomNav').classList.add('hidden');
+            document.getElementById('summaryCard').classList.add('hidden');
             document.getElementById('setupScreen').classList.remove('hidden');
             hideError();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -582,7 +762,6 @@
                 .replace(/'/g, '&#039;');
         }
 
-        // Sadece <u>...</u> etiketine izin veren güvenli soru metni biçimlendirici
         function formatQuestionText(str) {
             let escaped = escapeHTML(str);
             return escaped.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gi, '<u>$1</u>');
