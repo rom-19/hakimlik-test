@@ -571,6 +571,14 @@
             document.getElementById('errorBox').style.display = 'none';
         }
 
+        function cleanSystemTags(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/\[span_\d+\]/gi, '')
+                .replace(/\((?:start\vert{}end)_span\)/gi, '')
+                .replace(/\+\]/gi, '');
+        }
+
         function startFromTextarea() {
             hideError();
             const text = document.getElementById('jsonInput').value;
@@ -596,10 +604,17 @@
                 }
 
                 if (parsed.konu || parsed.baslik) {
-                    document.getElementById('testTitle').textContent = parsed.konu || parsed.baslik;
+                    document.getElementById('testTitle').textContent = cleanSystemTags(parsed.konu || parsed.baslik);
                 }
 
-                questionsData = qList;
+                // Tüm soru, şık ve çözüm metinlerini yükleme anında temizle (yanlış soruları kopyalarken de temiz kalsın)
+                questionsData = qList.map(item => ({
+                    ...item,
+                    soru: cleanSystemTags(item.soru),
+                    siklar: Array.isArray(item.siklar) ? item.siklar.map(s => cleanSystemTags(s)) : [],
+                    cozum: cleanSystemTags(item.cozum)
+                }));
+
                 userAnswers = new Array(questionsData.length).fill(null);
                 currentIndex = 0;
 
