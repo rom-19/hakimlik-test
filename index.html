@@ -576,7 +576,21 @@
             return String(str)
                 .replace(/\[span_\d+\]/gi, '')
                 .replace(/\((?:start\vert{}end)_span\)/gi, '')
-                .replace(/\+\]/gi, '');
+                .replace(/\[cite:\s*[\d,\s]+\]/gi, '');
+        }
+
+        // Şıklardaki tüm kalın (bold), altı çizili (underline) ve italik biçimlendirmeleri temizler
+        function cleanOptionFormatting(str) {
+            let cleaned = cleanSystemTags(str);
+            return cleaned
+                // HTML etiketlerini kaldır (<u>, <b>, <strong>, <i>, <em>, <ins>, <span> vb.)
+                .replace(/<\/?(?:u|b|strong|i|em|ins|mark|span)\b[^>]*>/gi, '')
+                // Markdown kalın ve altı çizili vurguları kaldır (**metin** ve __metin__)
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/__(.*?)__/g, '$1')
+                // Markdown tek yıldız/alt çizgi vurgularını kaldır (*metin* ve _metin_)
+                .replace(/(?<!\w)\*(?!\s)(.*?)(?<!\s)\*(?!\w)/g, '$1')
+                .replace(/(?<!\w)_(?!\s)(.*?)(?<!\s)_(?!\w)/g, '$1');
         }
 
         function startFromTextarea() {
@@ -607,11 +621,10 @@
                     document.getElementById('testTitle').textContent = cleanSystemTags(parsed.konu || parsed.baslik);
                 }
 
-                // Tüm soru, şık ve çözüm metinlerini yükleme anında temizle (yanlış soruları kopyalarken de temiz kalsın)
                 questionsData = qList.map(item => ({
                     ...item,
                     soru: cleanSystemTags(item.soru),
-                    siklar: Array.isArray(item.siklar) ? item.siklar.map(s => cleanSystemTags(s)) : [],
+                    siklar: Array.isArray(item.siklar) ? item.siklar.map(s => cleanOptionFormatting(s)) : [],
                     cozum: cleanSystemTags(item.cozum)
                 }));
 
